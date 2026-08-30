@@ -15,57 +15,6 @@ st.set_page_config(
 
 
 # =========================================================
-# CUSTOM CSS
-# =========================================================
-
-st.markdown(
-    """
-    <style>
-
-    .main-title {
-        font-size: 2.8rem;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-    }
-
-    .subtitle {
-        font-size: 1.15rem;
-        color: #666;
-        margin-bottom: 2rem;
-    }
-
-    .calculator-card {
-        padding: 1.5rem;
-        border-radius: 12px;
-        border: 1px solid rgba(128, 128, 128, 0.25);
-        margin-bottom: 0.5rem;
-        min-height: 190px;
-    }
-
-    .calculator-icon {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .calculator-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .calculator-description {
-        color: #666;
-        font-size: 0.95rem;
-        line-height: 1.5;
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-
-# =========================================================
 # SESSION STATE
 # =========================================================
 
@@ -74,11 +23,10 @@ if "selected_calculator" not in st.session_state:
 
 
 # =========================================================
-# SIDEBAR
+# SIDEBAR NAVIGATION
 # =========================================================
 
 st.sidebar.title("🧮 Calculator Hub")
-
 st.sidebar.caption("Choose a calculator")
 
 navigation_options = {
@@ -86,21 +34,30 @@ navigation_options = {
 }
 
 for key, calculator in CALCULATORS.items():
-
     navigation_options[key] = (
         f"{calculator['icon']} {calculator['name']}"
     )
 
 
+# Work out which option should be selected
+option_keys = list(navigation_options.keys())
+
+current_selection = st.session_state.selected_calculator
+
+if current_selection not in option_keys:
+    current_selection = "home"
+
+default_index = option_keys.index(current_selection)
+
+
 selected = st.sidebar.radio(
     "Navigation",
-    options=list(navigation_options.keys()),
+    options=option_keys,
+    index=default_index,
     format_func=lambda key: navigation_options[key],
-    key="navigation",
 )
 
-
-# Keep session state synchronized with sidebar
+# Keep our own state synchronized with the sidebar
 st.session_state.selected_calculator = selected
 
 
@@ -110,16 +67,10 @@ st.session_state.selected_calculator = selected
 
 if selected == "home":
 
-    st.markdown(
-        '<div class="main-title">🧮 Calculator Hub</div>',
-        unsafe_allow_html=True,
-    )
+    st.title("🧮 Calculator Hub")
 
     st.markdown(
-        '<div class="subtitle">'
         "Simple tools to help you calculate, compare, and plan."
-        "</div>",
-        unsafe_allow_html=True,
     )
 
     st.divider()
@@ -145,54 +96,50 @@ if selected == "home":
         )
 
     # -----------------------------------------------------
-    # Display calculator categories
+    # Display categories
     # -----------------------------------------------------
 
     for category, calculators in categories.items():
 
-        st.subheader(category)
+        st.header(category)
 
+        # Three calculator cards per row
         columns = st.columns(3)
 
         for index, (key, calculator) in enumerate(calculators):
 
             with columns[index % 3]:
 
-                st.markdown(
-                    f"""
-                    <div class="calculator-card">
+                # Native Streamlit bordered container
+                # instead of custom HTML
+                with st.container(border=True):
 
-                        <div class="calculator-icon">
-                            {calculator['icon']}
-                        </div>
+                    st.markdown(
+                        f"# {calculator['icon']}"
+                    )
 
-                        <div class="calculator-title">
-                            {calculator['name']}
-                        </div>
+                    st.subheader(
+                        calculator["name"]
+                    )
 
-                        <div class="calculator-description">
-                            {calculator['description']}
-                        </div>
+                    st.write(
+                        calculator["description"]
+                    )
 
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                    st.write("")
 
-                # -------------------------------------------------
-                # Open calculator button
-                # -------------------------------------------------
+                    if st.button(
+                        f"Open Calculator →",
+                        key=f"open_{key}",
+                        use_container_width=True,
+                    ):
 
-                if st.button(
-                    f"Open {calculator['name']} →",
-                    key=f"open_{key}",
-                    use_container_width=True,
-                ):
+                        # Only change OUR session state.
+                        # We don't modify the radio widget
+                        # directly.
+                        st.session_state.selected_calculator = key
 
-                    st.session_state.navigation = key
-                    st.session_state.selected_calculator = key
-
-                    st.rerun()
+                        st.rerun()
 
 
 # =========================================================
@@ -203,4 +150,14 @@ else:
 
     calculator = CALCULATORS[selected]
 
+    # Back to home button
+    if st.button("← Back to Calculator Hub"):
+
+        st.session_state.selected_calculator = "home"
+
+        st.rerun()
+
+    st.divider()
+
+    # Render selected calculator
     calculator["render"]()
