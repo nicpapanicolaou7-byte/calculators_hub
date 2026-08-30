@@ -114,6 +114,10 @@ def calculate_loan_payment(
 # COMPOUND INTEREST
 # =========================================================
 
+import pandas as pd
+from datetime import date, timedelta
+
+
 def calculate_compound_interest(
     initial_investment,
     monthly_contribution,
@@ -122,27 +126,26 @@ def calculate_compound_interest(
     compounds_per_year=12,
 ):
     """
-    Calculate investment growth with regular monthly contributions.
+    Calculate investment growth with monthly contributions.
 
     Parameters
     ----------
     initial_investment : float
-        Amount invested at the beginning of the investment period.
+        Initial amount invested at the beginning.
 
     monthly_contribution : float
-        Amount contributed at the END of each month.
+        Contribution made at the end of each calendar month.
 
     annual_rate : float
-        Nominal annual interest rate expressed as a percentage.
-        Example: 7.5 means 7.5%.
+        Nominal annual interest rate as a percentage.
+        Example: 10 means 10%.
 
     years : int
-        Number of years to invest.
+        Number of years.
 
-    compounds_per_year : int, optional
-        Number of times interest is compounded per year.
+    compounds_per_year : int
+        Compounding frequency:
 
-        Supported values:
             1   = annually
             2   = semi-annually
             4   = quarterly
@@ -152,58 +155,44 @@ def calculate_compound_interest(
     Returns
     -------
     tuple
-        (
-            final_balance,
-            total_contributions,
-            total_interest,
-            yearly_data
-        )
-
-        yearly_data is a pandas DataFrame containing:
-            Year
-            Contributions
-            Interest
-            Balance
+        final_balance
+        total_contributions
+        total_interest
+        yearly_data
 
     Notes
     -----
-    - Contributions are made at the END of each month.
-    - Interest is applied at each compounding period.
-    - The initial investment is present from the beginning.
-    - annual_rate is a nominal annual rate.
-    - Daily compounding assumes 365 days per year.
+    - Contributions occur at the end of each calendar month.
+    - Interest compounds according to compounds_per_year.
+    - Daily compounding uses 365 days per year.
+    - Leap years are handled naturally for contribution dates.
     """
 
     # ---------------------------------------------------------
-    # Validate inputs
+    # Validation
     # ---------------------------------------------------------
 
     if initial_investment < 0:
         raise ValueError(
-            "initial_investment must be >= 0."
+            "initial_investment must be >= 0"
         )
 
     if monthly_contribution < 0:
         raise ValueError(
-            "monthly_contribution must be >= 0."
+            "monthly_contribution must be >= 0"
         )
 
     if annual_rate < 0:
         raise ValueError(
-            "annual_rate must be >= 0."
+            "annual_rate must be >= 0"
         )
 
-    if not isinstance(years, int):
-        raise TypeError(
-            "years must be an integer."
-        )
-
-    if years <= 0:
+    if not isinstance(years, int) or years <= 0:
         raise ValueError(
-            "years must be > 0."
+            "years must be a positive integer"
         )
 
-    valid_compounding = {
+    valid_frequencies = {
         1,
         2,
         4,
@@ -211,82 +200,136 @@ def calculate_compound_interest(
         365,
     }
 
-    if compounds_per_year not in valid_compounding:
+    if compounds_per_year not in valid_frequencies:
         raise ValueError(
-            "compounds_per_year must be one of: "
-            "1, 2, 4, 12, or 365."
+            "compounds_per_year must be "
+            "1, 2, 4, 12, or 365"
         )
 
     # ---------------------------------------------------------
-    # Setup
+    # Basic setup
     # ---------------------------------------------------------
 
-    annual_rate_decimal = annual_rate / 100
+    rate = annual_rate / 100
 
-    # Rate applied at each compounding event.
-    periodic_rate = (
-        annual_rate_decimal / compounds_per_year
-    )
+    start_date = date.today()
 
     balance = float(initial_investment)
 
     yearly_results = []
 
+    # Total number of days.
+    end_date = date(
+        start_date.year + years,
+        start_date.month,
+        start_date.day,
+    )
+
+    current_date = start_date
+
+    # Track next monthly contribution.
+    contribution_month = start_date.month
+    contribution_year = start_date.year
+
     # ---------------------------------------------------------
     # Daily simulation
     # ---------------------------------------------------------
 
-    total_days = years * 365
-
-    for day in range(1, total_days + 1):
+    while current_date < end_date:
 
         # -----------------------------------------------------
-        # Determine whether today is a monthly contribution day.
-        #
-        # Using 365 / 12 gives approximately 30.42 days/month.
-        # Instead of pretending every month has the same number
-        # of days, use the cumulative-month approach below.
+        # Determine whether interest compounds today
         # -----------------------------------------------------
 
-        current_month = int(
-            (day - 1) * 12 / 365
-        ) + 1
+        should_compound = False
 
-        previous_month = int(
-            (day - 2) * 12 / 365
-        ) + 1 if day > 1 else 0
+        if compounds_per_year == 365:
+            # Every day.
+            should_compound = True
 
-        is_month_end = (
-            current_month != previous_month
-        )
+        elif compounds_per_year == 12:
+            # End of each month.
+            next_day = current_date + timedelta(days=1)
+
+            should_compound = (
+                next_day.month != current_date.month
+            )
+
+        elif compounds_per_year == 4:
+            # End of Mar, Jun, Sep, Dec.
+            next_day = current_date + timedelta(days=1)
+
+            should_compound = (
+                current_date.month in {3, 6, 9, 12}
+                and next_day.month != current_date.month
+            )
+
+        elif compounds_per_year == 2:
+            # End of Jun and Dec.
+            next_day = current_date + timedelta(days=1)
+
+            should_compound = (
+                current_date.month in {6, 12}
+                and next_day.month != current_date.month
+            )
+
+        elif compounds_per_year == 1:
+            # End of December.
+            next_day = current_date + timedelta(days=1)
+
+            should_compound = (
+                current_date.month == 12
+                and next_day.month == 1
+            )
 
         # -----------------------------------------------------
         # Apply interest
         # -----------------------------------------------------
 
-        if day % (365 // compounds_per_year) == 0:
-            balance *= (1 + periodic_rate)
+        if should_compound:
+
+            periodic_rate = (
+                rate / compounds_per_year
+            )
+
+            balance *= (
+                1 + periodic_rate
+            )
 
         # -----------------------------------------------------
-        # Add monthly contribution
+        # Monthly contribution
+        #
+        # Contribution happens at the END of the month.
         # -----------------------------------------------------
 
-        if is_month_end:
+        next_day = current_date + timedelta(days=1)
+
+        if next_day.month != current_date.month:
+
             balance += monthly_contribution
 
         # -----------------------------------------------------
-        # Record yearly results
+        # Move to next day
         # -----------------------------------------------------
 
-        if day % 365 == 0:
+        current_date = next_day
 
-            year = day // 365
+        # -----------------------------------------------------
+        # Record year-end result
+        # -----------------------------------------------------
 
-            total_months = year * 12
+        if (
+            current_date.month == 1
+            and current_date.day == 1
+        ):
+
+            year = current_date.year - start_date.year
 
             total_contributions = (
                 initial_investment
-                + monthly_contribution * total_months
+                + monthly_contribution
+                * year
+                * 12
             )
 
             interest_earned = (
@@ -303,12 +346,14 @@ def calculate_compound_interest(
             )
 
     # ---------------------------------------------------------
-    # Final totals
+    # Final values
     # ---------------------------------------------------------
 
     total_contributions = (
         initial_investment
-        + monthly_contribution * years * 12
+        + monthly_contribution
+        * years
+        * 12
     )
 
     interest_earned = (
@@ -325,7 +370,6 @@ def calculate_compound_interest(
         interest_earned,
         yearly_data,
     )
-
 def calculate_compound_interest2(
     initial_investment,
     monthly_contribution,
