@@ -169,4 +169,3 @@ def render_compound_interest_calculator():
         use_container_width=True,
         hide_index=True,
     )
-```
