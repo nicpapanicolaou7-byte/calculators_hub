@@ -1,4 +1,3 @@
-```python
 from calculators.loan import render_loan_calculator
 from calculators.compound_interest import (
     render_compound_interest_calculator,
