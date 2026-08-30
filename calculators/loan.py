@@ -14,18 +14,20 @@ def render_loan_calculator():
 
     st.markdown(
         '<div class="subtitle">'
-        'Calculate your monthly payment, total interest, and repayment schedule.'
-        '</div>',
+        "Calculate your payment, total interest, "
+        "and repayment schedule."
+        "</div>",
         unsafe_allow_html=True,
     )
 
-    # -----------------------------------------------------
-    # Inputs
-    # -----------------------------------------------------
+    # =====================================================
+    # INPUTS
+    # =====================================================
 
     col1, col2 = st.columns(2)
 
     with col1:
+
         loan_amount = st.number_input(
             "Loan amount",
             min_value=0.0,
@@ -44,6 +46,7 @@ def render_loan_calculator():
         )
 
     with col2:
+
         loan_term_years = st.number_input(
             "Loan term (years)",
             min_value=1,
@@ -53,7 +56,7 @@ def render_loan_calculator():
         )
 
         payments_per_year = st.selectbox(
-            "Payments per year",
+            "Payment frequency",
             options=[12, 4, 2, 1],
             index=0,
             format_func=lambda x: {
@@ -66,40 +69,43 @@ def render_loan_calculator():
 
     st.divider()
 
-    # -----------------------------------------------------
-    # Calculate
-    # -----------------------------------------------------
+    # =====================================================
+    # CALCULATION
+    # =====================================================
 
-    payment, total_interest, total_repayment, schedule = (
-        calculate_loan_payment(
-            principal=loan_amount,
-            annual_rate=interest_rate,
-            years=loan_term_years,
-            payments_per_year=payments_per_year,
-        )
+    (
+        payment,
+        total_interest,
+        total_repayment,
+        schedule,
+    ) = calculate_loan_payment(
+        principal=loan_amount,
+        annual_rate=interest_rate,
+        years=loan_term_years,
+        payments_per_year=payments_per_year,
     )
 
-    # -----------------------------------------------------
-    # Results
-    # -----------------------------------------------------
+    # =====================================================
+    # RESULTS
+    # =====================================================
 
     st.subheader("Results")
 
-    result_col1, result_col2, result_col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-    with result_col1:
+    with col1:
         st.metric(
             "Payment",
             f"€{payment:,.2f}",
         )
 
-    with result_col2:
+    with col2:
         st.metric(
             "Total interest",
             f"€{total_interest:,.2f}",
         )
 
-    with result_col3:
+    with col3:
         st.metric(
             "Total repayment",
             f"€{total_repayment:,.2f}",
@@ -107,32 +113,45 @@ def render_loan_calculator():
 
     st.divider()
 
-    # -----------------------------------------------------
-    # Chart
-    # -----------------------------------------------------
+    # =====================================================
+    # PAYMENT BREAKDOWN
+    # =====================================================
 
     st.subheader("Payment breakdown")
 
     chart_data = pd.DataFrame(
         {
-            "Principal": [loan_amount],
-            "Interest": [total_interest],
-        }
+            "Amount": [
+                loan_amount,
+                total_interest,
+            ]
+        },
+        index=[
+            "Principal",
+            "Interest",
+        ],
     )
 
     st.bar_chart(chart_data)
 
-    # -----------------------------------------------------
-    # Amortization schedule
-    # -----------------------------------------------------
+    # =====================================================
+    # AMORTIZATION
+    # =====================================================
 
     st.subheader("Amortization schedule")
 
     display_schedule = schedule.copy()
 
-    for column in ["Payment", "Principal", "Interest", "Balance"]:
-        display_schedule[column] = display_schedule[column].map(
-            lambda x: f"€{x:,.2f}"
+    for column in [
+        "Payment",
+        "Principal",
+        "Interest",
+        "Balance",
+    ]:
+
+        display_schedule[column] = (
+            display_schedule[column]
+            .map(lambda x: f"€{x:,.2f}")
         )
 
     st.dataframe(
