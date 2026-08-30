@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 
 from calculators.registry import CALCULATORS
