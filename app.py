@@ -182,4 +182,3 @@ else:
 
     # Render the selected calculator
     calculator["render"]()
-```
