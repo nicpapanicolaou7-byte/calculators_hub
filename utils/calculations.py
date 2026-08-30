@@ -218,4 +218,3 @@ def calculate_compound_interest(
         interest_earned,
         yearly_data,
     )
-```
