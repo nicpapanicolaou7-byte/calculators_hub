@@ -1,5 +1,4 @@
 ```python
-import math
 import pandas as pd
 
 
@@ -14,68 +13,65 @@ def calculate_loan_payment(
     payments_per_year=12,
 ):
     """
-    Calculate loan payment and generate an amortization schedule.
-
-    Parameters
-    ----------
-    principal : float
-        Initial loan amount.
-
-    annual_rate : float
-        Annual interest rate as a percentage.
-
-    years : int
-        Loan duration in years.
-
-    payments_per_year : int
-        Number of payments per year.
-
-    Returns
-    -------
-    payment : float
-        Regular payment amount.
-
-    total_interest : float
-        Total interest paid over the loan.
-
-    total_repayment : float
-        Total amount repaid.
-
-    schedule : pandas.DataFrame
-        Amortization schedule.
+    Calculate loan payment and amortization schedule.
     """
 
-    number_of_payments = years * payments_per_year
-
-    periodic_rate = (
-        annual_rate / 100 / payments_per_year
+    number_of_payments = (
+        years * payments_per_year
     )
 
-    # Handle zero-interest loans separately
+    periodic_rate = (
+        annual_rate
+        / 100
+        / payments_per_year
+    )
+
+    # Zero-interest loan
     if periodic_rate == 0:
-        payment = principal / number_of_payments
+
+        payment = (
+            principal
+            / number_of_payments
+        )
+
     else:
+
         payment = (
             principal
             * periodic_rate
-            * (1 + periodic_rate) ** number_of_payments
-            / (
-                (1 + periodic_rate) ** number_of_payments
+            * (1 + periodic_rate)
+            ** number_of_payments
+            /
+            (
+                (1 + periodic_rate)
+                ** number_of_payments
                 - 1
             )
         )
 
     balance = principal
+
     total_interest = 0
 
     schedule = []
 
-    for period in range(1, number_of_payments + 1):
+    for period in range(
+        1,
+        number_of_payments + 1,
+    ):
 
-        interest = balance * periodic_rate
-        principal_payment = payment - interest
+        interest = (
+            balance
+            * periodic_rate
+        )
 
-        # Prevent tiny floating-point errors
+        principal_payment = (
+            payment
+            - interest
+        )
+
+        # Prevent the final payment from
+        # exceeding the remaining balance.
         principal_payment = min(
             principal_payment,
             balance,
@@ -91,13 +87,21 @@ def calculate_loan_payment(
                 "Payment": payment,
                 "Principal": principal_payment,
                 "Interest": interest,
-                "Balance": max(balance, 0),
+                "Balance": max(
+                    balance,
+                    0,
+                ),
             }
         )
 
-    total_repayment = principal + total_interest
+    total_repayment = (
+        principal
+        + total_interest
+    )
 
-    schedule = pd.DataFrame(schedule)
+    schedule = pd.DataFrame(
+        schedule
+    )
 
     return (
         payment,
@@ -108,7 +112,7 @@ def calculate_loan_payment(
 
 
 # =========================================================
-# COMPOUND INTEREST CALCULATOR
+# COMPOUND INTEREST
 # =========================================================
 
 def calculate_compound_interest(
@@ -119,20 +123,24 @@ def calculate_compound_interest(
     compounds_per_year=12,
 ):
     """
-    Calculate compound investment growth with
+    Calculate investment growth with
     regular monthly contributions.
     """
 
     total_months = years * 12
 
-    annual_rate_decimal = annual_rate / 100
+    annual_rate_decimal = (
+        annual_rate / 100
+    )
 
-    # Convert annual rate into an approximate
-    # monthly rate based on the selected
-    # compounding frequency.
-    if compounds_per_year == 0:
+    # Convert annual rate to an effective
+    # monthly rate based on compounding frequency.
+    if annual_rate_decimal == 0:
+
         monthly_rate = 0
+
     else:
+
         periodic_rate = (
             (1 + annual_rate_decimal)
             ** (1 / compounds_per_year)
@@ -140,7 +148,8 @@ def calculate_compound_interest(
         )
 
         monthly_rate = (
-            (1 + periodic_rate) ** (compounds_per_year / 12)
+            (1 + periodic_rate)
+            ** (compounds_per_year / 12)
             - 1
         )
 
@@ -148,28 +157,36 @@ def calculate_compound_interest(
 
     yearly_results = []
 
-    for month in range(1, total_months + 1):
+    for month in range(
+        1,
+        total_months + 1,
+    ):
 
-        # Growth on existing balance
-        interest = balance * monthly_rate
+        # Interest earned during the month
+        interest = (
+            balance
+            * monthly_rate
+        )
 
         balance += interest
 
         # Monthly contribution
         balance += monthly_contribution
 
-        # Record end of each year
+        # Record once per year
         if month % 12 == 0:
 
             year = month // 12
 
             total_contributions = (
                 initial_investment
-                + monthly_contribution * month
+                + monthly_contribution
+                * month
             )
 
             interest_earned = (
-                balance - total_contributions
+                balance
+                - total_contributions
             )
 
             yearly_results.append(
@@ -183,14 +200,18 @@ def calculate_compound_interest(
 
     total_contributions = (
         initial_investment
-        + monthly_contribution * total_months
+        + monthly_contribution
+        * total_months
     )
 
     interest_earned = (
-        balance - total_contributions
+        balance
+        - total_contributions
     )
 
-    yearly_data = pd.DataFrame(yearly_results)
+    yearly_data = pd.DataFrame(
+        yearly_results
+    )
 
     return (
         balance,
