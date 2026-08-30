@@ -38,23 +38,25 @@ st.markdown(
         padding: 1.5rem;
         border-radius: 12px;
         border: 1px solid rgba(128, 128, 128, 0.25);
-        margin-bottom: 1rem;
-        height: 100%;
+        margin-bottom: 0.5rem;
+        min-height: 190px;
     }
 
     .calculator-icon {
         font-size: 2.5rem;
+        margin-bottom: 0.5rem;
     }
 
     .calculator-title {
         font-size: 1.3rem;
         font-weight: 600;
-        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
     }
 
     .calculator-description {
         color: #666;
-        margin-top: 0.5rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
     }
 
     </style>
@@ -64,34 +66,42 @@ st.markdown(
 
 
 # =========================================================
+# SESSION STATE
+# =========================================================
+
+if "selected_calculator" not in st.session_state:
+    st.session_state.selected_calculator = "home"
+
+
+# =========================================================
 # SIDEBAR
 # =========================================================
 
 st.sidebar.title("🧮 Calculator Hub")
 
-st.sidebar.caption(
-    "Choose a calculator"
-)
+st.sidebar.caption("Choose a calculator")
 
-
-# Create navigation options from the registry
-calculator_keys = list(CALCULATORS.keys())
-
-calculator_options = {
-    "home": "🏠 Calculator Home"
+navigation_options = {
+    "home": "🏠 Calculator Home",
 }
 
 for key, calculator in CALCULATORS.items():
-    calculator_options[key] = (
+
+    navigation_options[key] = (
         f"{calculator['icon']} {calculator['name']}"
     )
 
 
 selected = st.sidebar.radio(
     "Navigation",
-    options=list(calculator_options.keys()),
-    format_func=lambda key: calculator_options[key],
+    options=list(navigation_options.keys()),
+    format_func=lambda key: navigation_options[key],
+    key="navigation",
 )
+
+
+# Keep session state synchronized with sidebar
+st.session_state.selected_calculator = selected
 
 
 # =========================================================
@@ -107,14 +117,17 @@ if selected == "home":
 
     st.markdown(
         '<div class="subtitle">'
-        "Simple calculators for everyday financial decisions."
+        "Simple tools to help you calculate, compare, and plan."
         "</div>",
         unsafe_allow_html=True,
     )
 
     st.divider()
 
+    # -----------------------------------------------------
     # Group calculators by category
+    # -----------------------------------------------------
+
     categories = {}
 
     for key, calculator in CALCULATORS.items():
@@ -131,7 +144,10 @@ if selected == "home":
             (key, calculator)
         )
 
-    # Display each category
+    # -----------------------------------------------------
+    # Display calculator categories
+    # -----------------------------------------------------
+
     for category, calculators in categories.items():
 
         st.subheader(category)
@@ -163,12 +179,19 @@ if selected == "home":
                     unsafe_allow_html=True,
                 )
 
+                # -------------------------------------------------
+                # Open calculator button
+                # -------------------------------------------------
+
                 if st.button(
-                    "Open Calculator →",
+                    f"Open {calculator['name']} →",
                     key=f"open_{key}",
                     use_container_width=True,
                 ):
-                    st.session_state["selected_calculator"] = key
+
+                    st.session_state.navigation = key
+                    st.session_state.selected_calculator = key
+
                     st.rerun()
 
 
@@ -180,5 +203,4 @@ else:
 
     calculator = CALCULATORS[selected]
 
-    # Render the selected calculator
     calculator["render"]()
