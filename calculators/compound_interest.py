@@ -2,26 +2,31 @@
 import streamlit as st
 import pandas as pd
 
-from utils.calculations import calculate_compound_interest
+from utils.calculations import (
+    calculate_compound_interest,
+)
 
 
 def render_compound_interest_calculator():
 
     st.markdown(
-        '<div class="main-title">📈 Compound Interest Calculator</div>',
+        '<div class="main-title">'
+        "📈 Compound Interest Calculator"
+        "</div>",
         unsafe_allow_html=True,
     )
 
     st.markdown(
         '<div class="subtitle">'
-        'See how your money can grow through compound interest and regular contributions.'
-        '</div>',
+        "See how your money can grow through compound "
+        "interest and regular contributions."
+        "</div>",
         unsafe_allow_html=True,
     )
 
-    # -----------------------------------------------------
-    # Inputs
-    # -----------------------------------------------------
+    # =====================================================
+    # INPUTS
+    # =====================================================
 
     col1, col2 = st.columns(2)
 
@@ -77,41 +82,47 @@ def render_compound_interest_calculator():
 
     st.divider()
 
-    # -----------------------------------------------------
-    # Calculate
-    # -----------------------------------------------------
+    # =====================================================
+    # CALCULATION
+    # =====================================================
 
-    final_balance, total_contributions, interest_earned, yearly_data = (
-        calculate_compound_interest(
-            initial_investment=initial_investment,
-            monthly_contribution=monthly_contribution,
-            annual_rate=annual_return,
-            years=years,
-            compounds_per_year=compounding,
-        )
+    (
+        final_balance,
+        total_contributions,
+        interest_earned,
+        yearly_data,
+    ) = calculate_compound_interest(
+        initial_investment=initial_investment,
+        monthly_contribution=monthly_contribution,
+        annual_rate=annual_return,
+        years=years,
+        compounds_per_year=compounding,
     )
 
-    # -----------------------------------------------------
-    # Results
-    # -----------------------------------------------------
+    # =====================================================
+    # RESULTS
+    # =====================================================
 
     st.subheader("Results")
 
-    result_col1, result_col2, result_col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-    with result_col1:
+    with col1:
+
         st.metric(
             "Final balance",
             f"€{final_balance:,.2f}",
         )
 
-    with result_col2:
+    with col2:
+
         st.metric(
             "Total contributions",
             f"€{total_contributions:,.2f}",
         )
 
-    with result_col3:
+    with col3:
+
         st.metric(
             "Interest earned",
             f"€{interest_earned:,.2f}",
@@ -119,29 +130,39 @@ def render_compound_interest_calculator():
 
     st.divider()
 
-    # -----------------------------------------------------
-    # Growth chart
-    # -----------------------------------------------------
+    # =====================================================
+    # GROWTH CHART
+    # =====================================================
 
     st.subheader("Investment growth")
 
     chart_data = yearly_data.set_index("Year")[
-        ["Contributions", "Interest", "Balance"]
+        [
+            "Contributions",
+            "Interest",
+            "Balance",
+        ]
     ]
 
     st.line_chart(chart_data)
 
-    # -----------------------------------------------------
-    # Year-by-year table
-    # -----------------------------------------------------
+    # =====================================================
+    # YEARLY BREAKDOWN
+    # =====================================================
 
     st.subheader("Year-by-year breakdown")
 
     display_data = yearly_data.copy()
 
-    for column in ["Contributions", "Interest", "Balance"]:
-        display_data[column] = display_data[column].map(
-            lambda x: f"€{x:,.2f}"
+    for column in [
+        "Contributions",
+        "Interest",
+        "Balance",
+    ]:
+
+        display_data[column] = (
+            display_data[column]
+            .map(lambda x: f"€{x:,.2f}")
         )
 
     st.dataframe(
