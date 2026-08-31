@@ -162,6 +162,8 @@ def calculate_loan_payment_extra(
         # Reduce the balance
         balance -= principal
 
+        extra_payment = 0
+
         # Once a year, make the extra principal payment
         if months % 12 == 0 and balance > 0:
             extra_payment = min(extra_annual_payment, balance)
