@@ -131,7 +131,7 @@ def calculate_loan_payment_extra(
     monthly_interest_rate = annual_rate / 100 / 12
 
     # Calculate the normal monthly payment
-    monthly_payment = calculate_loan_payment(
+    monthly_payment, _, _, _ = calculate_loan_payment(
         loan_amount,
         annual_rate,
         years,
