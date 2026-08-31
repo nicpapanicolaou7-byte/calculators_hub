@@ -144,6 +144,8 @@ def calculate_loan_payment_extra(
     total_extra_paid = 0
     months = 0
 
+    schedule = []
+
     while balance > 0:
         months += 1
 
@@ -166,15 +168,44 @@ def calculate_loan_payment_extra(
             balance -= extra_payment
             total_extra_paid += extra_payment
 
+        # -----------------------------------------------------
+        # Add row to schedule
+        # -----------------------------------------------------
+
+        schedule.append(
+            {
+                "Payment #": month,
+                "Payment": payment,
+                "Principal": principal_payment,
+                "Interest": interest,
+                "Extra Payment": extra_payment,
+                "Balance": max(
+                    balance,
+                    0,
+                ),
+            }
+        )
+
         # Stop if loan is paid off
         if balance <= 0:
             break
 
+    loan_paid_off_in = f"{months // 12} years and {months % 12} months"
+    total_repayment = (
+        loan_amount
+        + total_interest
+    )
+
+    schedule = pd.DataFrame(
+        schedule
+    )
+
     return (
         monthly_payment,
         total_interest,
-        total_extra_paid,
-        months
+        total_repayment,
+        loan_paid_off_in,
+        schedule
     )
 
 
