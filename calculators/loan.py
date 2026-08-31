@@ -23,7 +23,7 @@ def render_loan_calculator():
     # INPUTS
     # =====================================================
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     with col1:
 
@@ -42,6 +42,18 @@ def render_loan_calculator():
             value=4.5,
             step=0.1,
             format="%.2f",
+        )
+
+        extra_annual_payment = st.number_input(
+            "Extra Annual Payment",
+            min_value=0,
+            value=0,
+            step=100,
+            format="%.2f",
+            help=(
+                    "Additional amount paid directly towards "
+                    "the principal once every year."
+                ),
         )
 
     with col2:
@@ -64,20 +76,6 @@ def render_loan_calculator():
                 2: "Semi-annually",
                 1: "Annually",
             }[x],
-        )
-
-    with col3:
-
-        extra_annual_payment = st.number_input(
-            "Extra Annual Payment",
-            min_value=0,
-            value=0,
-            step=100,
-            format="%.2f",
-            help=(
-                    "Additional amount paid directly towards "
-                    "the principal once every year."
-                ),
         )
 
     st.divider()
