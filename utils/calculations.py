@@ -109,6 +109,74 @@ def calculate_loan_payment(
         schedule,
     )
 
+def calculate_loan_payment_extra(
+    loan_amount,
+    years,
+    annual_rate,
+    payments_per_year=12,
+    extra_annual_payment=0
+):
+    """
+    Calculate loan repayment with an additional annual payment
+    directly against the principal.
+
+    Returns:
+        monthly_payment: Normal monthly installment
+        total_interest: Total interest paid with extra payments
+        total_extra_paid: Total amount of extra payments made
+        months: Number of months until the loan is fully repaid
+    """
+
+    # Convert annual interest rate to monthly
+    monthly_interest_rate = annual_rate / 100 / 12
+
+    # Calculate the normal monthly payment
+    monthly_payment = calculate_loan_payment(
+        loan_amount,
+        annual_rate,
+        years,
+        payments_per_year
+    )
+
+    # Simulate the loan month by month
+    balance = loan_amount
+    total_interest = 0
+    total_extra_paid = 0
+    months = 0
+
+    while balance > 0:
+        months += 1
+
+        # Calculate interest for this month
+        interest = balance * monthly_interest_rate
+        total_interest += interest
+
+        # Calculate principal portion of normal payment
+        principal = monthly_payment - interest
+
+        # Make sure we don't overpay the balance
+        principal = min(principal, balance)
+
+        # Reduce the balance
+        balance -= principal
+
+        # Once a year, make the extra principal payment
+        if months % 12 == 0 and balance > 0:
+            extra_payment = min(extra_annual_payment, balance)
+            balance -= extra_payment
+            total_extra_paid += extra_payment
+
+        # Stop if loan is paid off
+        if balance <= 0:
+            break
+
+    return (
+        monthly_payment,
+        total_interest,
+        total_extra_paid,
+        months
+    )
+
 
 # =========================================================
 # COMPOUND INTEREST
