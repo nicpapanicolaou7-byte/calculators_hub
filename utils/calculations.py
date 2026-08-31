@@ -174,9 +174,9 @@ def calculate_loan_payment_extra(
 
         schedule.append(
             {
-                "Payment #": month,
-                "Payment": payment,
-                "Principal": principal_payment,
+                "Payment #": months,
+                "Payment": monthly_payment,
+                "Principal": principal,
                 "Interest": interest,
                 "Extra Payment": extra_payment,
                 "Balance": max(
