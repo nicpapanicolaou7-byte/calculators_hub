@@ -46,9 +46,9 @@ def render_loan_calculator():
 
         extra_annual_payment = st.number_input(
             "Extra Annual Payment",
-            min_value=0,
-            value=0,
-            step=100,
+            min_value=0.0,
+            value=0.0,
+            step=100.0,
             format="%.2f",
             help=(
                     "Additional amount paid directly towards "
