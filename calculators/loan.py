@@ -114,9 +114,9 @@ def render_loan_calculator():
     
     else:
     
-        extra_payment = 0.0
-        extra_total_interest = None
-        extra_total_repayment = None    
+        extra_payment = payment
+        extra_total_interest = total_interest
+        extra_total_repayment = total_repayment
         loan_paid_off_in = f"{loan_term_years} years"
         extra_schedule = None
 
@@ -131,19 +131,19 @@ def render_loan_calculator():
     with col1:
         st.metric(
             "Payment",
-            f"€{payment:,.2f}",
+            f"€{extra_payment:,.2f}",
         )
 
     with col2:
         st.metric(
             "Total interest",
-            f"€{total_interest:,.2f}",
+            f"€{extra_total_interest:,.2f}",
         )
 
     with col3:
         st.metric(
             "Total repayment",
-            f"€{total_repayment:,.2f}",
+            f"€{extra_total_repayment:,.2f}",
         )
 
     with col4:
@@ -164,7 +164,7 @@ def render_loan_calculator():
         {
             "Amount": [
                 loan_amount,
-                total_interest,
+                extra_total_interest,
             ]
         },
         index=[
