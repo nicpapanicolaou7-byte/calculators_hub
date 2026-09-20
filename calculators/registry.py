@@ -2,6 +2,9 @@ from calculators.loan import render_loan_calculator
 from calculators.compound_interest import (
     render_compound_interest_calculator,
 )
+from calculators.historical_money_value import (
+    render_historical_money_value_calculator,
+)
 
 
 # =========================================================
@@ -41,6 +44,17 @@ CALCULATORS = {
             "with compound interest and regular contributions."
         ),
         "render": render_compound_interest_calculator,
+    },
+
+    "historical_money_value": {
+        "name": "Historical Money Value",
+        "icon": "💰",
+        "category": "Finance",
+        "description": (
+            "See what money from one year would be worth "
+            "in another year based on inflation."
+        ),
+        "render": render_historical_money_value_calculator,
     },
 
 }
