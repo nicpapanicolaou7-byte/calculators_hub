@@ -2,13 +2,13 @@ import streamlit as st
 
 from utils.calculations import (
     pace_to_speed,
+    speed_to_pace,
     distance_and_time_to_pace,
     format_pace,
 )
 
 
 # Standard running distances.
-# Values are stored as (distance, unit).
 STANDARD_DISTANCES = {
     "5K": (5.0, "km"),
     "10K": (10.0, "km"),
@@ -30,104 +30,212 @@ def render_running_pace_calculator():
 
     st.markdown(
         '<div class="subtitle">'
-        "Convert running pace to speed, or calculate the pace "
-        "and speed required to achieve a target finishing time."
+        "Convert between running pace and speed, or calculate "
+        "the pace and speed required to achieve a target finishing time."
         "</div>",
         unsafe_allow_html=True,
     )
 
     # =====================================================
-    # SECTION 1 — PACE TO SPEED
+    # SECTION 1 — PACE / SPEED CONVERSION
     # =====================================================
 
-    st.subheader("🏃 Pace → Speed")
+    st.subheader("🏃 Pace ↔ Speed")
 
-    st.write(
-        "Enter your running pace and see the equivalent speed "
-        "in both kilometres per hour and miles per hour."
+    conversion_mode = st.radio(
+        "Conversion",
+        [
+            "Pace → Speed",
+            "Speed → Pace",
+        ],
+        horizontal=True,
+        key="running_conversion_mode",
     )
 
-    col1, col2, col3 = st.columns(3)
+    # -----------------------------------------------------
+    # PACE → SPEED
+    # -----------------------------------------------------
 
-    with col1:
-        pace_minutes = st.number_input(
-            "Minutes",
-            min_value=0,
-            max_value=59,
-            value=6,
-            step=1,
-            key="running_pace_minutes",
+    if conversion_mode == "Pace → Speed":
+
+        st.write(
+            "Enter your running pace and see the equivalent "
+            "speed in both kilometres per hour and miles per hour."
         )
 
-    with col2:
-        pace_seconds = st.number_input(
-            "Seconds",
-            min_value=0,
-            max_value=59,
-            value=0,
-            step=1,
-            key="running_pace_seconds",
-        )
+        col1, col2, col3 = st.columns(3)
 
-    with col3:
-        pace_unit = st.selectbox(
-            "Pace unit",
-            ["km", "mile"],
-            format_func=lambda x: (
-                "min/km" if x == "km" else "min/mile"
-            ),
-            key="running_pace_unit",
-        )
+        with col1:
+            pace_minutes = st.number_input(
+                "Minutes",
+                min_value=0,
+                max_value=59,
+                value=6,
+                step=1,
+                key="running_pace_minutes",
+            )
 
-    # Calculate speed.
-    try:
-        speed_kmh, speed_mph = pace_to_speed(
-            pace_minutes,
-            pace_seconds,
-            pace_unit,
-        )
-    except ValueError as e:
-        st.error(str(e))
-        return
+        with col2:
+            pace_seconds = st.number_input(
+                "Seconds",
+                min_value=0,
+                max_value=59,
+                value=0,
+                step=1,
+                key="running_pace_seconds",
+            )
 
-    st.markdown("### Result")
+        with col3:
+            pace_unit = st.selectbox(
+                "Pace unit",
+                ["km", "mile"],
+                format_func=lambda x: (
+                    "min/km" if x == "km" else "min/mile"
+                ),
+                key="running_pace_unit",
+            )
 
-    result_col1, result_col2 = st.columns(2)
+        try:
 
-    with result_col1:
-        st.metric(
-            "Speed",
-            (
-                f"{speed_kmh:.2f} km/h"
-                if pace_unit == "km"
-                else f"{speed_mph:.2f} mph"
-            ),
-        )
+            speed_kmh, speed_mph = pace_to_speed(
+                pace_minutes,
+                pace_seconds,
+                pace_unit,
+            )
 
-    with result_col2:
-        st.metric(
-            "Equivalent speed",
-            (
-                f"{speed_mph:.2f} mph"
-                if pace_unit == "km"
-                else f"{speed_kmh:.2f} km/h"
-            ),
-        )
+        except ValueError as e:
 
-    # Equivalent pace in the other unit.
-    if pace_unit == "km":
-        equivalent_pace = format_pace(60 / speed_mph)
+            st.error(str(e))
+            return
 
-        st.info(
-            f"Equivalent pace: **{equivalent_pace} min/mile**"
-        )
+        st.markdown("### Result")
+
+        result_col1, result_col2 = st.columns(2)
+
+        with result_col1:
+            st.metric(
+                "Speed",
+                (
+                    f"{speed_kmh:.2f} km/h"
+                    if pace_unit == "km"
+                    else f"{speed_mph:.2f} mph"
+                ),
+            )
+
+        with result_col2:
+            st.metric(
+                "Equivalent speed",
+                (
+                    f"{speed_mph:.2f} mph"
+                    if pace_unit == "km"
+                    else f"{speed_kmh:.2f} km/h"
+                ),
+            )
+
+        if pace_unit == "km":
+
+            equivalent_pace = format_pace(
+                60 / speed_mph
+            )
+
+            st.info(
+                f"Equivalent pace: "
+                f"**{equivalent_pace} min/mile**"
+            )
+
+        else:
+
+            equivalent_pace = format_pace(
+                60 / speed_kmh
+            )
+
+            st.info(
+                f"Equivalent pace: "
+                f"**{equivalent_pace} min/km**"
+            )
+
+    # -----------------------------------------------------
+    # SPEED → PACE
+    # -----------------------------------------------------
 
     else:
-        equivalent_pace = format_pace(60 / speed_kmh)
 
-        st.info(
-            f"Equivalent pace: **{equivalent_pace} min/km**"
+        st.write(
+            "Enter your running speed and see the equivalent "
+            "pace in both minutes per kilometre and minutes per mile."
         )
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            speed = st.number_input(
+                "Speed",
+                min_value=0.01,
+                value=10.0,
+                step=0.1,
+                format="%.2f",
+                key="running_speed",
+            )
+
+        with col2:
+            speed_unit = st.selectbox(
+                "Speed unit",
+                ["km", "mile"],
+                format_func=lambda x: (
+                    "km/h" if x == "km" else "mph"
+                ),
+                key="running_speed_unit",
+            )
+
+        try:
+
+            (
+                pace_min_per_km,
+                pace_min_per_mile,
+            ) = speed_to_pace(
+                speed,
+                speed_unit,
+            )
+
+        except ValueError as e:
+
+            st.error(str(e))
+            return
+
+        st.markdown("### Result")
+
+        result_col1, result_col2 = st.columns(2)
+
+        with result_col1:
+            st.metric(
+                "Pace",
+                f"{format_pace(pace_min_per_km)} min/km",
+            )
+
+        with result_col2:
+            st.metric(
+                "Equivalent pace",
+                f"{format_pace(pace_min_per_mile)} min/mile",
+            )
+
+        # Show equivalent speed in the other unit.
+        if speed_unit == "km":
+
+            equivalent_speed = speed / 1.609344
+
+            st.info(
+                f"Equivalent speed: "
+                f"**{equivalent_speed:.2f} mph**"
+            )
+
+        else:
+
+            equivalent_speed = speed * 1.609344
+
+            st.info(
+                f"Equivalent speed: "
+                f"**{equivalent_speed:.2f} km/h**"
+            )
 
     st.divider()
 
