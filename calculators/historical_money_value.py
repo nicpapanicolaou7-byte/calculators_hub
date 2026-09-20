@@ -495,5 +495,5 @@ def render_historical_money_value_calculator():
 # DIRECT EXECUTION
 # =========================================================
 
-if __name__ == "__main__":
-    render_historical_money_value_calculator()
+#if __name__ == "__main__":
+#    render_historical_money_value_calculator()
