@@ -37,26 +37,29 @@ def render_running_pace_calculator():
     )
 
     # =====================================================
-    # SECTION 1 — PACE / SPEED CONVERSION
+    # CALCULATOR MODE
     # =====================================================
 
-    st.subheader("🏃 Pace ↔ Speed")
-
-    conversion_mode = st.radio(
-        "Conversion",
+    calculation_mode = st.radio(
+        "What do you want to calculate?",
         [
-            "Pace → Speed",
-            "Speed → Pace",
+            "🏃 Pace → Speed",
+            "⚡ Speed → Pace",
+            "🎯 Distance + Time",
         ],
         horizontal=True,
-        key="running_conversion_mode",
+        key="running_calculation_mode",
     )
 
-    # -----------------------------------------------------
-    # PACE → SPEED
-    # -----------------------------------------------------
+    st.divider()
 
-    if conversion_mode == "Pace → Speed":
+    # =====================================================
+    # PACE → SPEED
+    # =====================================================
+
+    if calculation_mode == "🏃 Pace → Speed":
+
+        st.subheader("🏃 Pace → Speed")
 
         st.write(
             "Enter your running pace and see the equivalent "
@@ -154,11 +157,13 @@ def render_running_pace_calculator():
                 f"**{equivalent_pace} min/km**"
             )
 
-    # -----------------------------------------------------
+    # =====================================================
     # SPEED → PACE
-    # -----------------------------------------------------
+    # =====================================================
 
-    else:
+    elif calculation_mode == "⚡ Speed → Pace":
+
+        st.subheader("⚡ Speed → Pace")
 
         st.write(
             "Enter your running speed and see the equivalent "
@@ -237,186 +242,187 @@ def render_running_pace_calculator():
                 f"**{equivalent_speed:.2f} km/h**"
             )
 
-    st.divider()
-
     # =====================================================
-    # SECTION 2 — TARGET TIME TO PACE
+    # DISTANCE + TIME → REQUIRED PACE
     # =====================================================
-
-    st.subheader("🎯 Distance + Target Time → Required Pace")
-
-    st.write(
-        "Choose a standard race distance or enter your own "
-        "distance and target finishing time."
-    )
-
-    # -----------------------------------------------------
-    # Distance
-    # -----------------------------------------------------
-
-    distance_type = st.selectbox(
-        "Distance",
-        list(STANDARD_DISTANCES.keys()) + ["Custom"],
-        key="running_distance_type",
-    )
-
-    if distance_type == "Custom":
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            distance = st.number_input(
-                "Distance",
-                min_value=0.01,
-                value=10.0,
-                step=0.1,
-                format="%.2f",
-                key="running_custom_distance",
-            )
-
-        with col2:
-            distance_unit = st.selectbox(
-                "Distance unit",
-                ["km", "mile"],
-                format_func=lambda x: (
-                    "Kilometres (km)"
-                    if x == "km"
-                    else "Miles"
-                ),
-                key="running_distance_unit",
-            )
 
     else:
 
-        distance, distance_unit = STANDARD_DISTANCES[
-            distance_type
-        ]
+        st.subheader("🎯 Distance + Time → Required Pace")
 
-        st.info(
-            f"**{distance_type}:** "
-            f"{distance:g} {distance_unit}"
+        st.write(
+            "Choose a standard race distance or enter your own "
+            "distance and target finishing time to calculate "
+            "the average pace and speed you need."
         )
 
-    # -----------------------------------------------------
-    # Target time
-    # -----------------------------------------------------
+        # -------------------------------------------------
+        # Distance
+        # -------------------------------------------------
 
-    st.markdown("### Target finishing time")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        target_hours = st.number_input(
-            "Hours",
-            min_value=0,
-            max_value=99,
-            value=0,
-            step=1,
-            key="running_target_hours",
+        distance_type = st.selectbox(
+            "Distance",
+            list(STANDARD_DISTANCES.keys()) + ["Custom"],
+            key="running_distance_type",
         )
 
-    with col2:
-        target_minutes = st.number_input(
-            "Minutes",
-            min_value=0,
-            max_value=59,
-            value=50,
-            step=1,
-            key="running_target_minutes",
+        if distance_type == "Custom":
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                distance = st.number_input(
+                    "Distance",
+                    min_value=0.01,
+                    value=10.0,
+                    step=0.1,
+                    format="%.2f",
+                    key="running_custom_distance",
+                )
+
+            with col2:
+                distance_unit = st.selectbox(
+                    "Distance unit",
+                    ["km", "mile"],
+                    format_func=lambda x: (
+                        "Kilometres (km)"
+                        if x == "km"
+                        else "Miles"
+                    ),
+                    key="running_distance_unit",
+                )
+
+        else:
+
+            distance, distance_unit = STANDARD_DISTANCES[
+                distance_type
+            ]
+
+            st.info(
+                f"**{distance_type}:** "
+                f"{distance:g} {distance_unit}"
+            )
+
+        # -------------------------------------------------
+        # Target time
+        # -------------------------------------------------
+
+        st.markdown("### Target finishing time")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            target_hours = st.number_input(
+                "Hours",
+                min_value=0,
+                max_value=99,
+                value=0,
+                step=1,
+                key="running_target_hours",
+            )
+
+        with col2:
+            target_minutes = st.number_input(
+                "Minutes",
+                min_value=0,
+                max_value=59,
+                value=50,
+                step=1,
+                key="running_target_minutes",
+            )
+
+        with col3:
+            target_seconds = st.number_input(
+                "Seconds",
+                min_value=0,
+                max_value=59,
+                value=0,
+                step=1,
+                key="running_target_seconds",
+            )
+
+        # -------------------------------------------------
+        # Calculate
+        # -------------------------------------------------
+
+        try:
+
+            (
+                pace_min_per_km,
+                pace_min_per_mile,
+                speed_kmh,
+                speed_mph,
+            ) = distance_and_time_to_pace(
+                distance=distance,
+                distance_unit=distance_unit,
+                hours=target_hours,
+                minutes=target_minutes,
+                seconds=target_seconds,
+            )
+
+        except ValueError as e:
+
+            st.error(str(e))
+            return
+
+        # -------------------------------------------------
+        # Results
+        # -------------------------------------------------
+
+        st.markdown("### Required average")
+
+        result_col1, result_col2 = st.columns(2)
+
+        with result_col1:
+            st.metric(
+                "Pace",
+                f"{format_pace(pace_min_per_km)} min/km",
+            )
+
+        with result_col2:
+            st.metric(
+                "Pace",
+                f"{format_pace(pace_min_per_mile)} min/mile",
+            )
+
+        speed_col1, speed_col2 = st.columns(2)
+
+        with speed_col1:
+            st.metric(
+                "Speed",
+                f"{speed_kmh:.2f} km/h",
+            )
+
+        with speed_col2:
+            st.metric(
+                "Speed",
+                f"{speed_mph:.2f} mph",
+            )
+
+        # -------------------------------------------------
+        # Summary
+        # -------------------------------------------------
+
+        total_target_seconds = (
+            target_hours * 3600
+            + target_minutes * 60
+            + target_seconds
         )
 
-    with col3:
-        target_seconds = st.number_input(
-            "Seconds",
-            min_value=0,
-            max_value=59,
-            value=0,
-            step=1,
-            key="running_target_seconds",
+        target_time_display = (
+            f"{total_target_seconds // 3600:02d}:"
+            f"{(total_target_seconds % 3600) // 60:02d}:"
+            f"{total_target_seconds % 60:02d}"
         )
 
-    # -----------------------------------------------------
-    # Calculate
-    # -----------------------------------------------------
-
-    try:
-
-        (
-            pace_min_per_km,
-            pace_min_per_mile,
-            speed_kmh,
-            speed_mph,
-        ) = distance_and_time_to_pace(
-            distance=distance,
-            distance_unit=distance_unit,
-            hours=target_hours,
-            minutes=target_minutes,
-            seconds=target_seconds,
+        st.success(
+            f"To complete **{distance:g} {distance_unit}** "
+            f"in **{target_time_display}**, you need to average "
+            f"**{format_pace(pace_min_per_km)} min/km** "
+            f"({format_pace(pace_min_per_mile)} min/mile)."
         )
 
-    except ValueError as e:
-
-        st.error(str(e))
-        return
-
-    # -----------------------------------------------------
-    # Results
-    # -----------------------------------------------------
-
-    st.markdown("### Required average")
-
-    result_col1, result_col2 = st.columns(2)
-
-    with result_col1:
-        st.metric(
-            "Pace",
-            f"{format_pace(pace_min_per_km)} min/km",
+        st.caption(
+            "Pace and speed are average values. Your actual pace "
+            "may vary throughout the run."
         )
-
-    with result_col2:
-        st.metric(
-            "Pace",
-            f"{format_pace(pace_min_per_mile)} min/mile",
-        )
-
-    speed_col1, speed_col2 = st.columns(2)
-
-    with speed_col1:
-        st.metric(
-            "Speed",
-            f"{speed_kmh:.2f} km/h",
-        )
-
-    with speed_col2:
-        st.metric(
-            "Speed",
-            f"{speed_mph:.2f} mph",
-        )
-
-    # -----------------------------------------------------
-    # Summary
-    # -----------------------------------------------------
-
-    total_target_seconds = (
-        target_hours * 3600
-        + target_minutes * 60
-        + target_seconds
-    )
-
-    target_time_display = (
-        f"{total_target_seconds // 3600:02d}:"
-        f"{(total_target_seconds % 3600) // 60:02d}:"
-        f"{total_target_seconds % 60:02d}"
-    )
-
-    st.success(
-        f"To complete **{distance:g} {distance_unit}** "
-        f"in **{target_time_display}**, you need to average "
-        f"**{format_pace(pace_min_per_km)} min/km** "
-        f"({format_pace(pace_min_per_mile)} min/mile)."
-    )
-
-    st.caption(
-        "Pace and speed are average values. Your actual pace "
-        "may vary throughout the run."
-    )
