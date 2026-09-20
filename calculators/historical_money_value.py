@@ -1,4 +1,3 @@
-```python
 from pathlib import Path
 
 import pandas as pd
@@ -498,4 +497,3 @@ def render_historical_money_value_calculator():
 
 if __name__ == "__main__":
     render_historical_money_value_calculator()
-```
