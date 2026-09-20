@@ -637,6 +637,33 @@ def pace_to_speed(pace_minutes, pace_seconds, unit="km"):
 
     return speed_kmh, speed_mph
 
+def speed_to_pace(speed, unit="km"):
+    """
+    Convert running speed to pace.
+
+    Args:
+        speed: Running speed.
+        unit: "km" for km/h or "mile" for mph.
+
+    Returns:
+        Tuple of pace in minutes per km and minutes per mile.
+    """
+
+    if speed <= 0:
+        raise ValueError("Speed must be greater than zero.")
+
+    if unit == "km":
+        speed_kmh = speed
+        speed_mph = speed_kmh / KM_PER_MILE
+    else:
+        speed_mph = speed
+        speed_kmh = speed_mph * KM_PER_MILE
+
+    # Pace = 60 / speed.
+    pace_min_per_km = 60 / speed_kmh
+    pace_min_per_mile = 60 / speed_mph
+
+    return pace_min_per_km, pace_min_per_mile
 
 def distance_and_time_to_pace(
     distance,
