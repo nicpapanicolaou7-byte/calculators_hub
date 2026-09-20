@@ -585,3 +585,110 @@ def calculate_compound_interest2(
         interest_earned,
         yearly_data,
     )
+
+# =========================================================
+# RUNNING PACE & SPEED
+# =========================================================
+
+KM_PER_MILE = 1.609344
+
+
+def format_pace(total_minutes):
+    """
+    Convert decimal minutes into MM:SS format.
+
+    Example:
+        5.5 -> "5:30"
+    """
+    total_seconds = round(total_minutes * 60)
+
+    minutes = total_seconds // 60
+    seconds = total_seconds % 60
+
+    return f"{minutes}:{seconds:02d}"
+
+
+def pace_to_speed(pace_minutes, pace_seconds, unit="km"):
+    """
+    Convert running pace to speed.
+
+    Args:
+        pace_minutes: Whole minutes in the pace.
+        pace_seconds: Seconds in the pace.
+        unit: "km" or "mile".
+
+    Returns:
+        Tuple of speed in km/h and mph.
+    """
+
+    total_pace_minutes = pace_minutes + pace_seconds / 60
+
+    if total_pace_minutes <= 0:
+        raise ValueError("Pace must be greater than zero.")
+
+    speed_in_pace_unit = 60 / total_pace_minutes
+
+    if unit == "km":
+        speed_kmh = speed_in_pace_unit
+        speed_mph = speed_kmh / KM_PER_MILE
+    else:
+        speed_mph = speed_in_pace_unit
+        speed_kmh = speed_mph * KM_PER_MILE
+
+    return speed_kmh, speed_mph
+
+
+def distance_and_time_to_pace(
+    distance,
+    distance_unit,
+    hours,
+    minutes,
+    seconds,
+):
+    """
+    Calculate the average pace and speed required
+    to complete a distance within a target time.
+
+    Returns:
+        pace_min_per_km
+        pace_min_per_mile
+        speed_kmh
+        speed_mph
+    """
+
+    total_time_minutes = (
+        hours * 60
+        + minutes
+        + seconds / 60
+    )
+
+    if distance <= 0:
+        raise ValueError("Distance must be greater than zero.")
+
+    if total_time_minutes <= 0:
+        raise ValueError("Target time must be greater than zero.")
+
+    # Convert distance to kilometres.
+    if distance_unit == "km":
+        distance_km = distance
+    else:
+        distance_km = distance * KM_PER_MILE
+
+    # Average speed.
+    speed_kmh = distance_km / (total_time_minutes / 60)
+    speed_mph = speed_kmh / KM_PER_MILE
+
+    # Average pace.
+    pace_min_per_km = total_time_minutes / distance_km
+
+    distance_miles = distance_km / KM_PER_MILE
+    pace_min_per_mile = total_time_minutes / distance_miles
+
+    return (
+        pace_min_per_km,
+        pace_min_per_mile,
+        speed_kmh,
+        speed_mph,
+    )
+
+
