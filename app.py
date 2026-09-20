@@ -2,7 +2,7 @@ import streamlit as st
 
 from calculators.registry import CALCULATORS
 
-st.write("REGISTERED CALCULATORS:", list(CALCULATORS.keys()))
+#st.write("REGISTERED CALCULATORS:", list(CALCULATORS.keys()))
 
 
 # =========================================================
