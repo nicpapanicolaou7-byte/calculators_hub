@@ -5,6 +5,7 @@ from calculators.compound_interest import (
 from calculators.historical_money_value import (
     render_historical_money_value_calculator,
 )
+from calculators.running_pace import render_running_pace_calculator
 
 
 # =========================================================
@@ -55,6 +56,17 @@ CALCULATORS = {
             "in another year based on inflation."
         ),
         "render": render_historical_money_value_calculator,
+    },
+
+    "running_pace": {
+        "name": "Running Pace & Speed",
+        "icon": "🏃",
+        "category": "Running & Fitness",
+        "description": (
+            "Convert running pace to speed and calculate "
+            "the pace needed for a target finishing time."
+        ),
+        "render": render_running_pace_calculator,
     },
 
 }
